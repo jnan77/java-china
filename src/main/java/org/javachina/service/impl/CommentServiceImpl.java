@@ -1,15 +1,8 @@
 package org.javachina.service.impl;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import org.javachina.Constant;
-
 import com.blade.ioc.annotation.Inject;
 import com.blade.ioc.annotation.Service;
-import com.blade.jdbc.Pager;
+import com.blade.jdbc.Paginator;
 import com.blade.kit.DateKit;
 import org.javachina.kit.Utils;
 import org.javachina.model.Comment;
@@ -18,6 +11,11 @@ import org.javachina.model.User;
 import org.javachina.service.CommentService;
 import org.javachina.service.TopicService;
 import org.javachina.service.UserService;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Service
 public class CommentServiceImpl implements CommentService {
@@ -30,27 +28,26 @@ public class CommentServiceImpl implements CommentService {
 
 	@Override
 	public Comment getComment(Integer cid) {
-		return Comment.db.findByPK(cid, Comment.class);
+		return new Comment().findById(cid);
 	}
 
 	@Override
-	public Pager<Map<String, Object>> getPageListMap(Integer tid, Integer uid, String orderby, int page, int count) {
+	public Paginator<Map<String, Object>> getPageListMap(Integer tid, Integer uid, String orderby, int page, int count) {
 
-		Pager<Comment> pager = Comment.db.eq("tid", tid).eq("uid", uid).orderBy(orderby).page(page, count,
-				Comment.class);
+		Paginator<Comment> pager = new Comment().where("tid", tid).where("uid", uid).order(orderby).page(page, count);
 		if (null != pager) {
 			return this.getCommentPageMap(pager);
 		}
 		return null;
 	}
 
-	private Pager<Map<String, Object>> getCommentPageMap(Pager<Comment> commentPage) {
+	private Paginator<Map<String, Object>> getCommentPageMap(Paginator<Comment> commentPage) {
 
 		long totalCount = commentPage.getTotal();
 		int page = commentPage.getPageNum();
 		int limit = commentPage.getLimit();
 
-		Pager<Map<String, Object>> result = new Pager<Map<String, Object>>(totalCount, page, limit);
+		Paginator<Map<String, Object>> result = new Paginator<Map<String, Object>>(totalCount, page, limit);
 
 		List<Comment> comments = commentPage.getList();
 		List<Map<String, Object>> nodeMaps = new ArrayList<Map<String, Object>>();
@@ -105,7 +102,7 @@ public class CommentServiceImpl implements CommentService {
 		comment.create_time = DateKit.getCurrentUnixTime();
 
 		try {
-			return Comment.db.insert(comment);
+			return comment.save();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -117,7 +114,7 @@ public class CommentServiceImpl implements CommentService {
 		if (null != cid) {
 			Comment comment = new Comment();
 			comment.cid = cid;
-			Comment.db.delete(comment);
+			comment.delete();
 			return true;
 		}
 		return false;
@@ -125,12 +122,12 @@ public class CommentServiceImpl implements CommentService {
 
 	@Override
 	public Comment getTopicLastComment(Integer tid) {
-		return Comment.db.eq("tid", tid).orderBy("cid desc").first(Comment.class);
+		return new Comment().where("tid", tid).order("cid desc").findOne();
 	}
 
 	@Override
-	public Long getComments(Integer uid) {
-		return Comment.db.eq("uid", uid).count(Comment.class);
+	public int getComments(Integer uid) {
+		return new Comment().where("uid", uid).count();
 	}
 
 }

@@ -1,20 +1,14 @@
 package org.javachina.service.impl;
 
-import java.util.List;
-
 import com.blade.ioc.annotation.Inject;
 import com.blade.ioc.annotation.Service;
-import com.blade.jdbc.Pager;
+import com.blade.jdbc.Paginator;
 import org.javachina.dto.TopicDto;
 import org.javachina.kit.Utils;
 import org.javachina.model.Topic;
-import org.javachina.service.CommentService;
-import org.javachina.service.NodeService;
-import org.javachina.service.NoticeService;
-import org.javachina.service.SettingsService;
-import org.javachina.service.TopicCountService;
-import org.javachina.service.TopicService;
-import org.javachina.service.UserService;
+import org.javachina.service.*;
+
+import java.util.List;
 
 @Service
 public class TopicServiceImpl implements TopicService {
@@ -39,7 +33,7 @@ public class TopicServiceImpl implements TopicService {
 
 	@Override
 	public Topic getTopic(Integer tid) {
-		return Topic.db.findByPK(tid, Topic.class);
+		return new Topic().findById(tid);
 	}
 	
 	@Override
@@ -53,7 +47,7 @@ public class TopicServiceImpl implements TopicService {
 					+ "left join t_topiccount d on a.tid = d.tid "
 					+ "where a.status = ? ";
 			
-			TopicDto topicDto = Topic.db.sql(sql, 1).first(TopicDto.class);
+			TopicDto topicDto = new Topic().sql(sql, 1).findOne();
 			String content = Utils.markdown2html(topicDto.content);
 			topicDto.content = content;
 			return topicDto;
@@ -63,11 +57,11 @@ public class TopicServiceImpl implements TopicService {
 
 	@Override
 	public long getTopics(String user_name) {
-		return Topic.db.eq("user_name", user_name).eq("status", 1).count(Topic.class);
+		return new Topic().where("user_name = ? and status = ?", user_name, 1).count();
 	}
 
 	@Override
-	public Pager<TopicDto> getTopics(Integer nid, int page, int limit) {
+	public Paginator<TopicDto> getTopics(Integer nid, int page, int limit) {
 		String sql = "select a.tid, a.user_name, a.reply_user, a.title, a.create_time, a.update_time, " +
 				"b.title as node_name, b.slug as node_slug, c.avatar, d.comments "
 				+ "from t_topic a "
@@ -79,7 +73,7 @@ public class TopicServiceImpl implements TopicService {
 			sql += "and a.nid = " + nid;
 		}
 		
-		return Topic.db.sql(sql, 1).orderBy("a.weight desc").page(page, limit, TopicDto.class);
+		return new Topic().sql(sql, 1).order("a.weight desc").page(page, limit);
 	}
 
 	@Override
@@ -93,7 +87,7 @@ public class TopicServiceImpl implements TopicService {
 				+ "from t_topic a "
 				+ "left join t_user b on a.user_name = b.login_name "
 				+ "where a.status = 1 order by a.weight desc limit ?";
-		return Topic.db.sql(sql, limit).list(TopicDto.class);
+		return new Topic().sql(sql, limit).list();
 	}
 	
 }

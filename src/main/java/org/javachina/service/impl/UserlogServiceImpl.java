@@ -1,6 +1,6 @@
 package org.javachina.service.impl;
 
-import com.blade.context.ApplicationWebContext;
+import com.blade.context.WebApplicationContext;
 import com.blade.ioc.annotation.Service;
 import com.blade.kit.DateKit;
 import org.javachina.kit.Utils;
@@ -13,7 +13,7 @@ public class UserlogServiceImpl implements UserlogService {
 	
 	@Override
 	public void save(final Integer uid, final String action, final String content) {
-		final String ip = Utils.getIpAddr(ApplicationWebContext.request());
+		final String ip = Utils.getIpAddr(WebApplicationContext.request());
 		Runnable t = new Runnable() {
 			@Override
 			public void run() {
@@ -24,7 +24,7 @@ public class UserlogServiceImpl implements UserlogService {
 					userlog.content = content;
 					userlog.ip_addr = ip;
 					userlog.create_time = DateKit.getCurrentUnixTime();
-					Userlog.db.insert(userlog);
+					userlog.save();
 				} catch (Exception e) {
 					e.printStackTrace();
 				}

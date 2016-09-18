@@ -1,11 +1,10 @@
 package org.javachina.service;
 
-import java.util.List;
-
-import com.blade.jdbc.Pager;
-
+import com.blade.jdbc.Paginator;
 import org.javachina.dto.NodeDto;
 import org.javachina.model.Node;
+
+import java.util.List;
 
 public interface NodeService {
 	
@@ -13,7 +12,7 @@ public interface NodeService {
 	
 	Node getNode(String slug);
 
-	Pager<Node> getNodes(String orderBy, int page, int limit);
+	Paginator<Node> getNodes(String orderBy, int page, int limit);
 
 	List<NodeDto> getNodes();
 	

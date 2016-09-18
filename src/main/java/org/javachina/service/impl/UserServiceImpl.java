@@ -2,14 +2,11 @@ package org.javachina.service.impl;
 
 import com.blade.ioc.annotation.Inject;
 import com.blade.ioc.annotation.Service;
-import com.blade.jdbc.Pager;
+import com.blade.jdbc.Paginator;
 import com.blade.kit.EncrypKit;
 import com.blade.kit.StringKit;
-import org.javachina.Constant;
-import org.javachina.kit.Utils;
 import org.javachina.model.LoginUser;
 import org.javachina.model.User;
-import org.javachina.model.Userinfo;
 import org.javachina.service.*;
 
 @Service
@@ -32,12 +29,12 @@ public class UserServiceImpl implements UserService {
 
 	@Override
 	public User getUser(Integer uid) {
-		return User.db.findByPK(uid, User.class);
+		return new User().findById(uid);
 	}
 
 	@Override
-	public Pager<User> getPageList(Integer status, Integer uid, String orderby, int page, int count) {
-		return User.db.eq("status", status).eq("uid", uid).orderBy(orderby).page(page, count, User.class);
+	public Paginator<User> getPageList(Integer status, Integer uid, String orderby, int page, int count) {
+		return new User().where("status", status).where("uid", uid).order(orderby).page(page, count);
 	}
 
 	@Override
@@ -47,9 +44,9 @@ public class UserServiceImpl implements UserService {
 		}
 
 		String pwd = EncrypKit.md5(loginname + password);
-		User user = User.db.eq("login_name", loginname).eq("pass_word", pwd).first(User.class);
+		User user = new User().where("login_name", loginname).where("pass_word", pwd).findOne();
 		if (null == user) {
-			user = User.db.eq("email", loginname).eq("pass_word", pwd).first(User.class);
+			user = new User().where("email", loginname).where("pass_word", pwd).findOne();
 		}
 		return user;
 	}
@@ -63,13 +60,13 @@ public class UserServiceImpl implements UserService {
 		loginUser.setRole_id(user.role_id);
 		loginUser.setAvatar(user.avatar);
 
-		Long comments = commentService.getComments(user.uid);
+		int comments = commentService.getComments(user.uid);
 		loginUser.setComments(comments);
 
 		long topics = topicService.getTopics(user.login_name);
 		loginUser.setTopics(topics);
 
-		Long notices = noticeService.getNotices(user.uid);
+		int notices = noticeService.getNotices(user.uid);
 		loginUser.setNotices(notices);
 
 //		Userinfo userinfo = userinfoService.getUserinfo(user.getUid());

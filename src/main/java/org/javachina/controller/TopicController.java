@@ -1,17 +1,7 @@
 package org.javachina.controller;
 
-import java.util.List;
-import java.util.Map;
-
-import org.javachina.dto.NodeDto;
-import org.javachina.dto.TopicDto;
-import org.javachina.model.Node;
-import org.javachina.service.CommentService;
-import org.javachina.service.NodeService;
-import org.javachina.service.TopicService;
-
 import com.blade.ioc.annotation.Inject;
-import com.blade.jdbc.Pager;
+import com.blade.jdbc.Paginator;
 import com.blade.kit.StringKit;
 import com.blade.mvc.annotation.Controller;
 import com.blade.mvc.annotation.PathVariable;
@@ -19,6 +9,15 @@ import com.blade.mvc.annotation.RequestParam;
 import com.blade.mvc.annotation.Route;
 import com.blade.mvc.http.HttpMethod;
 import com.blade.mvc.view.ModelAndView;
+import org.javachina.dto.NodeDto;
+import org.javachina.dto.TopicDto;
+import org.javachina.model.Node;
+import org.javachina.service.CommentService;
+import org.javachina.service.NodeService;
+import org.javachina.service.TopicService;
+
+import java.util.List;
+import java.util.Map;
 
 /**
  * Created by oushaku on 16/8/26.
@@ -53,7 +52,7 @@ public class TopicController extends BaseController{
     	}
     	
     	List<Node> hot_nodes = nodeService.getNodes("topics desc", 1, 10).getList();
-    	Pager<TopicDto> topicPage = topicService.getTopics(nid, page, 10);
+    	Paginator<TopicDto> topicPage = topicService.getTopics(nid, page, 10);
     	List<NodeDto> nodes = nodeService.getNodes();
     	
     	mav.add("hot_nodes", hot_nodes);
@@ -72,7 +71,7 @@ public class TopicController extends BaseController{
     public ModelAndView topicDetail(ModelAndView mav, @PathVariable int tid,
     		@RequestParam(value="page", required = false, defaultValue = "1") int page){
     	TopicDto topic = topicService.getTopicDetail(tid);
-    	Pager<Map<String, Object>> commentPage = commentService.getPageListMap(tid, null, "create_time asc", page, 10);
+		Paginator<Map<String, Object>> commentPage = commentService.getPageListMap(tid, null, "create_time asc", page, 10);
     	
     	mav.add("topic", topic);
     	mav.add("commentPage", commentPage);

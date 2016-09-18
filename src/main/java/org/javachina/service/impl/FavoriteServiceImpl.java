@@ -1,21 +1,17 @@
 package org.javachina.service.impl;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
 import com.blade.ioc.annotation.Inject;
 import com.blade.ioc.annotation.Service;
-import com.blade.jdbc.Pager;
+import com.blade.jdbc.Paginator;
 import com.blade.kit.DateKit;
 import com.blade.kit.StringKit;
 import org.javachina.model.Favorite;
 import org.javachina.model.Topic;
-import org.javachina.service.FavoriteService;
-import org.javachina.service.NodeService;
-import org.javachina.service.TopicCountService;
-import org.javachina.service.TopicService;
-import org.javachina.service.UserService;
+import org.javachina.service.*;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 @Service
 public class FavoriteServiceImpl implements FavoriteService {
@@ -33,7 +29,7 @@ public class FavoriteServiceImpl implements FavoriteService {
 	private TopicCountService topicCountService;
 	
 	public Favorite getFavorite(String type, Integer uid, Integer event_id) {
-		return Favorite.db.eq("type", type).eq("uid", uid).eq("event_id", event_id).first(Favorite.class);
+		return new Favorite().where("type", type).where("uid", uid).where("event_id", event_id).findOne();
 	}
 	
 	@Override
@@ -48,14 +44,14 @@ public class FavoriteServiceImpl implements FavoriteService {
 				favorite.uid = uid;
 				favorite.event_id = event_id;
 				favorite.create_time = DateKit.getCurrentUnixTime();
-				Favorite.db.insert(favorite);
+				favorite.save();
 				count = 1;
 			} else {
 				Favorite favorite = new Favorite();
 				favorite.type = type;
 				favorite.uid = uid;
 				favorite.event_id = event_id;
-				Favorite.db.delete(favorite);
+				favorite.delete();
 				count = -1;
 			}
 
@@ -75,15 +71,15 @@ public class FavoriteServiceImpl implements FavoriteService {
 	}
 
 	@Override
-	public Long favorites(String type, Integer uid) {
+	public int favorites(String type, Integer uid) {
 		if(null != uid && StringKit.isNotBlank(type)){
-			return Favorite.db.eq("type", type).eq("uid", uid).count(Long.class);
+			return new Favorite().where("type", type).where("uid", uid).count();
 		}
-		return 0L;
+		return 0;
 	}
 
 	@Override
-	public Pager<Map<String, Object>> getMyTopics(Integer uid, Integer page, Integer count) {
+	public Paginator<Map<String, Object>> getMyTopics(Integer uid, Integer page, Integer count) {
 		if(null != uid){
 			if(null == page || page < 1){
 				page = 1;
@@ -92,14 +88,14 @@ public class FavoriteServiceImpl implements FavoriteService {
 			if(null == count || count < 1){
 				count = 10;
 			}
-			
-			Pager<Favorite> faPage = Favorite.db.eq("type", "topic").eq("uid", uid).orderBy("id desc").page(page, count, Favorite.class);
+
+			Paginator<Favorite> faPage = new Favorite().where("type", "topic").where("uid", uid).order("id desc").page(page, count);
 			if(null != faPage && faPage.getTotal() > 0){
 				long totalCount = faPage.getTotal();
 				int page_ = faPage.getPageNum();
 				int pageSize = faPage.getLimit();
-				
-				Pager<Map<String, Object>> result = new Pager<Map<String,Object>>(totalCount, page_, pageSize);
+
+				Paginator<Map<String, Object>> result = new Paginator<Map<String,Object>>(totalCount, page_, pageSize);
 				
 				List<Favorite> favorites = faPage.getList();
 				
@@ -123,7 +119,7 @@ public class FavoriteServiceImpl implements FavoriteService {
 	}
 
 	@Override
-	public Pager<Map<String, Object>> getFollowing(Integer uid, Integer page, Integer count) {
+	public Paginator<Map<String, Object>> getFollowing(Integer uid, Integer page, Integer count) {
 		if(null != uid){
 			if(null == page || page < 1){
 				page = 1;
@@ -131,13 +127,13 @@ public class FavoriteServiceImpl implements FavoriteService {
 			if(null == count || count < 1){
 				count = 10;
 			}
-			
-			Pager<Favorite> faPage = Favorite.db.eq("type", "following").eq("uid", uid).orderBy("id desc").page(page, count, Favorite.class);
+
+			Paginator<Favorite> faPage = new Favorite().where("type", "following").where("uid", uid).order("id desc").page(page, count);
 			if(null != faPage && faPage.getTotal() > 0){
 				long totalCount = faPage.getTotal();
 				int page_ = faPage.getPageNum();
 				int pageSize = faPage.getLimit();
-				Pager<Map<String, Object>> result = new Pager<Map<String,Object>>(totalCount, page_, pageSize);
+				Paginator<Map<String, Object>> result = new Paginator<Map<String,Object>>(totalCount, page_, pageSize);
 				
 				List<Favorite> favorites = faPage.getList();
 				
@@ -161,7 +157,7 @@ public class FavoriteServiceImpl implements FavoriteService {
 	@Override
 	public List<Map<String, Object>> getMyNodes(Integer uid) {
 		if(null != uid){
-			List<Favorite> favorites = Favorite.db.eq("type", "node").eq("uid", uid).orderBy("id desc").list(Favorite.class);
+			List<Favorite> favorites = new Favorite().where("type", "node").where("uid", uid).order("id desc").list();
 			if(null != favorites && favorites.size() > 0){
 				List<Map<String, Object>> result = new ArrayList<Map<String,Object>>(favorites.size());
 //				for(Favorite favorite : favorites){

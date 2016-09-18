@@ -1,10 +1,10 @@
 package org.javachina.service;
 
-import java.util.List;
-
-import com.blade.jdbc.Pager;
+import com.blade.jdbc.Paginator;
 import org.javachina.dto.TopicDto;
 import org.javachina.model.Topic;
+
+import java.util.List;
 
 public interface TopicService {
 	
@@ -14,7 +14,7 @@ public interface TopicService {
 
 	long getTopics(String user_name);
 
-	Pager<TopicDto> getTopics(Integer nid, int page, int limit);
+	Paginator<TopicDto> getTopics(Integer nid, int page, int limit);
 
 	List<TopicDto> getTodayTopics(int limit);
 	

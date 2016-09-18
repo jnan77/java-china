@@ -2,6 +2,7 @@ package org.javachina.controller.api;
 
 import java.util.List;
 
+import com.blade.jdbc.Paginator;
 import org.javachina.annotation.Permissions;
 import org.javachina.dto.RestResponse;
 import org.javachina.dto.TopicDto;
@@ -9,7 +10,6 @@ import org.javachina.kit.Utils;
 import org.javachina.service.TopicService;
 
 import com.blade.ioc.annotation.Inject;
-import com.blade.jdbc.Pager;
 import com.blade.mvc.annotation.RequestParam;
 import com.blade.mvc.annotation.RestController;
 import com.blade.mvc.annotation.Route;
@@ -37,9 +37,9 @@ public class TopicController {
 			@RequestParam(value = "page", required = false, defaultValue = "1") int page,
 			@RequestParam(value = "limit", required = false, defaultValue = "10") int limit) {
 
-		Pager<TopicDto> pager = topicService.getTopics(null, page, limit);
+		Paginator<TopicDto> pager = topicService.getTopics(null, page, limit);
 
-		RestResponse<Pager<TopicDto>> restResponse = RestResponse.build(pager);
+		RestResponse<Paginator<TopicDto>> restResponse = RestResponse.build(pager);
 
 		response.json(Utils.toJSONString(restResponse));
 	}

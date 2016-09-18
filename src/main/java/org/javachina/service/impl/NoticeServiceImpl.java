@@ -1,13 +1,8 @@
 package org.javachina.service.impl;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import com.blade.ioc.annotation.Inject;
 import com.blade.ioc.annotation.Service;
-import com.blade.jdbc.Pager;
+import com.blade.jdbc.Paginator;
 import com.blade.kit.DateKit;
 import com.blade.kit.StringKit;
 import org.javachina.model.Comment;
@@ -18,6 +13,11 @@ import org.javachina.service.CommentService;
 import org.javachina.service.NoticeService;
 import org.javachina.service.TopicService;
 import org.javachina.service.UserService;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Service
 public class NoticeServiceImpl implements NoticeService {
@@ -39,28 +39,28 @@ public class NoticeServiceImpl implements NoticeService {
 			notice.to_uid = to_uid;
 			notice.event_id = event_id;
 			notice.create_time = DateKit.getCurrentUnixTime();
-			Notice.db.insert(notice);
+			notice.save();
 			return true;
 		}
 		return false;
 	}
 	
 	@Override
-	public Pager<Map<String, Object>> getNoticePage(Integer uid, Integer page, Integer count) {
+	public Paginator<Map<String, Object>> getNoticePage(Integer uid, Integer page, Integer count) {
 		if(null != uid){
 			if(page < 1) page = 1;
 			if(count < 1) count = 10;
-			Pager<Notice> pager = Notice.db.eq("to_uid", uid).orderBy("id desc").page(page, count, Notice.class);
+			Paginator<Notice> pager = new Notice().where("to_uid", uid).order("id desc").page(page, count);
 			return this.getNoticePageMap(pager);
 		}
 		return null;
 	}
 	
-	private Pager<Map<String, Object>> getNoticePageMap(Pager<Notice> noticePage){
+	private Paginator<Map<String, Object>> getNoticePageMap(Paginator<Notice> noticePage){
 		long totalCount = noticePage.getTotal();
 		int page = noticePage.getPageNum();
 		int pageSize = noticePage.getLimit();
-		Pager<Map<String, Object>> pageResult = new Pager<Map<String,Object>>(totalCount, page, pageSize);
+		Paginator<Map<String, Object>> pageResult = new Paginator<Map<String,Object>>(totalCount, page, pageSize);
 		
 		List<Notice> notices = noticePage.getList();
 		
@@ -129,7 +129,7 @@ public class NoticeServiceImpl implements NoticeService {
 				Notice notice = new Notice();
 				notice.is_read = true;
 				notice.to_uid = to_uid;
-				Notice.db.update(notice);
+				notice.update();
 				return true;
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -139,11 +139,11 @@ public class NoticeServiceImpl implements NoticeService {
 	}
 
 	@Override
-	public Long getNotices(Integer uid) {
+	public int getNotices(Integer uid) {
 		if(null != uid){
-			return Notice.db.eq("is_read", 0).eq("to_uid", uid).count(Notice.class);
+			return new Notice().where("is_read", 0).where("to_uid", uid).count();
 		}
-		return 0L;
+		return 0;
 	}
 
 }

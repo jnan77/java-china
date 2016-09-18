@@ -1,6 +1,6 @@
 package org.javachina.kit;
 
-import com.blade.context.ApplicationWebContext;
+import com.blade.context.WebApplicationContext;
 import com.blade.kit.AES;
 import com.blade.kit.StringKit;
 import com.blade.mvc.http.Request;
@@ -42,7 +42,7 @@ public class SessionKit {
 	}
 	
 	public static LoginUser getLoginUser() {
-		Session session = ApplicationWebContext.session();
+		Session session = WebApplicationContext.session();
 		if(null == session){
 			return null;
 		}
@@ -66,7 +66,7 @@ public class SessionKit {
 			String val = AES.encrypt(value);
 			boolean isSSL = Constant.SITE_URL.startsWith("https");
 			response.removeCookie(cookieName);
-			String path = ApplicationWebContext.servletContext().getContextPath();
+			String path = WebApplicationContext.servletContext().getContextPath();
 			response.cookie(path, cookieName, val, 604800, isSSL);
 		}
 	}

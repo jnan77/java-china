@@ -10,7 +10,7 @@ import com.blade.mvc.http.HttpMethod;
 import com.blade.mvc.http.Request;
 import com.blade.mvc.http.Response;
 import com.blade.mvc.view.ModelAndView;
-import com.blade.patchca.DefaultPatchca;
+
 import org.javachina.dto.RestResponse;
 import org.javachina.kit.SessionKit;
 import org.javachina.model.LoginUser;
@@ -80,6 +80,7 @@ public class IndexController {
 
     @Route(value = "captcha", method = HttpMethod.GET)
     public void captcha(Request request, Response response){
+
         patchca.size(200, 40).render(request, response);
     }
 
